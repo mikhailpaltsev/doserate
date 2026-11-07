@@ -261,8 +261,8 @@ git switch hw2-work
 После публикации репозитория и создания итоговой метки `hw2` проверяющий сможет выполнить:
 
 ```bash
-git clone <URL_РЕПОЗИТОРИЯ>
-cd AI4Science
+git clone <https://github.com/mikhailpaltsev/doserate.git>
+cd doserate
 git checkout refs/tags/hw2
 python3.11 -m venv .venv
 source .venv/bin/activate
