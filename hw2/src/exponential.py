@@ -107,7 +107,7 @@ def dose_rate(
     if np.any(t_arr < 0):
         raise ValueError("Время должно быть >= 0")
 
-    return BACKGROUND + A * np.exp(-lam * t_arr)
+    return BACKGROUND + A * np.exp(+lam * t_arr)
 
 
 def half_life(lam: float) -> float:
