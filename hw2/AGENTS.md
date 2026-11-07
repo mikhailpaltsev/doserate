@@ -1,18 +1,45 @@
-# AGENTS.md — Домашняя работа 2
+# AGENTS.md — Домашняя работа №2 «Проверка»
 
-## Проверка верификатора
+## Подготовка окружения
+
+Команды выполняются из каталога `hw2`.
+
+Требуется Python 3.11.
 
 ```bash
-python -m pytest checks -q
+python -m pip install -r requirements.txt
 ```
 
-## Запуск эксперимента
+## Основная команда проверки
 
 ```bash
-python run_experiment.py dry      # проверка схемы
-python run_experiment.py smoke    # один seed
-python run_experiment.py sweep    # все 5 seed
-python run_experiment.py full     # полный расчёт с вердиктом
+python -m pytest checks -q && python run_experiment.py full
+```
+
+Команда запускает тесты свойств и договора о данных, затем выполняет вычислительный эксперимент с пятью фиксированными seed, рассчитывает RMSE, парное улучшение, 95%-й доверительный интервал и выводит вердикт.
+
+Если тесты не пройдут, эксперимент не запускается.
+
+## Дополнительные режимы
+
+```bash
+python run_experiment.py dry
+python run_experiment.py smoke
+python run_experiment.py sweep
+python run_experiment.py full
 ```
 
 Результаты сохраняются в `results/`.
+
+## Воспроизведение обнаруженной ошибки
+
+Ошибочная реализация сохранена в коммите `06a3d08` ветки `hw2-intentional-bug`.
+
+Результаты проверки до и после исправления находятся в:
+
+- `results/caught_error_before.txt`
+- `results/caught_error_after.txt`
+
+Рабочая версия программы находится в ветке `hw2-work`. Итоговая сдача будет зафиксирована тегом `hw2`.
+
+Для запуска верификатора не требуются реальные медицинские данные: проверки используют синтетические данные.
