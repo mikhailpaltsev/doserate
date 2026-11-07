@@ -1,0 +1,11 @@
+/Пациенты РНТ I-131.xlsx
+/data_processed/
+
+/prepare_data.ipynb
+.ipynb_checkpoints/
+
+__pycache__/
+.pytest_cache/
+.venv/
+
+.env
