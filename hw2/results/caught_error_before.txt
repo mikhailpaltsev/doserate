@@ -1,0 +1,97 @@
+.................FF.F..F                                                 [100%]
+=================================== FAILURES ===================================
+_____________________________ test_model_monotone ______________________________
+
+    def test_model_monotone():
+        """Производная -A*lambda*exp(-lambda*t) < 0 при A > 0, lambda > 0."""
+        for A in [1.0, 10.0, 30.0]:
+            for lam in [0.005, 0.01, 0.03]:
+                t_vals = np.linspace(0, 100, 50)
+                y_vals = dose_rate(t_vals, A, lam)
+                diffs = np.diff(y_vals)
+>               assert np.all(diffs < 0), (
+                    f"Не строго убывает при A={A}, lam={lam}: "
+                    f"diffs={diffs[diffs >= 0][:5]}"
+                )
+E               AssertionError: Не строго убывает при A=1.0, lam=0.005: diffs=[0.01025632 0.01036151 0.01046778 0.01057514 0.01068361]
+E               assert np.False_
+E                +  where np.False_ = <function all at 0x10b5168f0>(array([0.01025632, 0.01036151, 0.01046778, 0.01057514, 0.01068361,\n       0.01079318, 0.01090388, 0.01101571, 0.011128...    0.01542605, 0.01558426, 0.0157441 , 0.01590558, 0.01606871,\n       0.01623351, 0.01640001, 0.01656821, 0.01673814]) < 0)
+E                +    where <function all at 0x10b5168f0> = np.all
+
+checks/test_properties.py:34: AssertionError
+______________________ test_recover_noiseless_parameters _______________________
+
+    def test_recover_noiseless_parameters():
+        """На синтетических данных без шума параметры восстанавливаются с
+        относительной ошибкой не более 1e-3."""
+        test_cases = [
+            (10.0, 0.01),
+            (20.0, 0.02),
+            (5.0, 0.005),
+            (30.0, 0.03),
+        ]
+        t = np.array([1.0, 2.0, 3.5, 24.0, 48.0])
+    
+        for A_true, lam_true in test_cases:
+            y = dose_rate(t, A_true, lam_true)
+            result = fit_exponential(t, y)
+            rel_err_A = abs(result.A - A_true) / A_true
+            rel_err_lam = abs(result.lam - lam_true) / lam_true
+>           assert rel_err_A <= 1e-3, (
+                f"Отн. ошибка A={rel_err_A:.2e} > 1e-3 "
+                f"(истина A={A_true}, оценка {result.A:.6f})"
+            )
+E           AssertionError: Отн. ошибка A=1.91e-01 > 1e-3 (истина A=10.0, оценка 11.906534)
+E           assert 0.19065338780740504 <= 0.001
+
+checks/test_properties.py:58: AssertionError
+__________________________ test_time_units_conversion __________________________
+
+    def test_time_units_conversion():
+        """Замена единицы времени не изменяет физическую кривую.
+        lambda_day = 24 * lambda_hour с rtol=1e-3."""
+        A_true, lam_hour = 15.0, 0.015
+        t_hour = np.array([1.0, 2.0, 3.5, 24.0, 48.0])
+        y = dose_rate(t_hour, A_true, lam_hour)
+    
+        # Переход к суткам: t_day = t_hour / 24
+        t_day = t_hour / 24.0
+        res_hour = fit_exponential(t_hour, y)
+        res_day = fit_exponential(t_day, y)
+    
+>       assert np.isclose(res_day.lam, 24.0 * res_hour.lam, rtol=1e-3), (
+            f"lam_day={res_day.lam:.6f} != 24*lam_hour={24*res_hour.lam:.6f}"
+        )
+E       AssertionError: lam_day=0.000001 != 24*lam_hour=0.000024
+E       assert np.False_
+E        +  where np.False_ = <function isclose at 0x10b523170>(1.00000000086261e-06, (24.0 * 1.0000000002324658e-06), rtol=0.001)
+E        +    where <function isclose at 0x10b523170> = np.isclose
+E        +    and   1.00000000086261e-06 = FitResult(A=19.7617067398325, lam=1.00000000086261e-06, half_life=np.float64(693147.1799620296), A_std=4.569307799012996, lam_std=0.23053120642887717).lam
+E        +    and   1.0000000002324658e-06 = FitResult(A=19.761899514405943, lam=1.0000000002324658e-06, half_life=np.float64(693147.1803988123), A_std=4.56958979957619, lam_std=0.009606219919121832).lam
+
+checks/test_properties.py:105: AssertionError
+_______________________ test_time_measurement_alignment ________________________
+
+    def test_time_measurement_alignment():
+        """Каждой временной точке соответствует правильная тройка измерений.
+        Проверка: если переставить времена без соответствующей перестановки
+        измерений, подгонка даст неверный результат."""
+        A_true, lam_true = 10.0, 0.02
+        t = np.array([1.0, 2.0, 3.5, 24.0, 48.0])
+        y = dose_rate(t, A_true, lam_true)
+    
+        # Правильная подгонка
+        res_correct = fit_exponential(t, y)
+>       assert np.isclose(res_correct.A, A_true, rtol=1e-3)
+E       assert np.False_
+E        +  where np.False_ = <function isclose at 0x10b523170>(14.722702620429477, 10.0, rtol=0.001)
+E        +    where <function isclose at 0x10b523170> = np.isclose
+E        +    and   14.722702620429477 = FitResult(A=14.722702620429477, lam=1.0000000000106834e-06, half_life=np.float64(693147.1805525401), A_std=4.657226195651718, lam_std=0.01314146510341141).A
+
+checks/test_properties.py:180: AssertionError
+=========================== short test summary info ============================
+FAILED checks/test_properties.py::test_model_monotone - AssertionError: Не ст...
+FAILED checks/test_properties.py::test_recover_noiseless_parameters - Asserti...
+FAILED checks/test_properties.py::test_time_units_conversion - AssertionError...
+FAILED checks/test_properties.py::test_time_measurement_alignment - assert np...
+4 failed, 20 passed in 0.52s
